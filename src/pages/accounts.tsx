@@ -57,8 +57,16 @@ export default function Accounts() {
       }
     } catch (error) {
       console.error("Error fetching accounts:", error);
-      setError("Failed to load accounts. Please try again later.");
-      setAccounts([]);
+      // Don't show error message for connection issues or server errors, treat as empty state
+      if (error.code === 'ERR_NETWORK' || error.response?.status === 401 || error.response?.status === 500) {
+        // Connection refused, authentication error, or server error - treat as no accounts found
+        setError(null);
+        setAccounts([]);
+      } else {
+        // Only set error for other API errors
+        setError("Failed to load accounts. Please try again later.");
+        setAccounts([]);
+      }
     } finally {
       setIsLoadingAccounts(false);
     }
@@ -232,7 +240,7 @@ export default function Accounts() {
           <Card className="col-span-full p-8 text-center">
             <div className="flex flex-col items-center justify-center space-y-4">
               <Smartphone className="h-12 w-12 text-gray-400" />
-              <h3 className="text-lg font-medium text-gray-700">No WhatsApp Accounts Linked</h3>
+              <h3 className="text-lg font-medium text-gray-700">No Account found</h3>
               <p className="text-gray-500">Connect your first WhatsApp account to get started</p>
               <Button
                 onClick={fetchQRCode}
